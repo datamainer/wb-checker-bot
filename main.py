@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-import logging  # Импортируем модуль logging
+import logging  
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from selenium import webdriver
@@ -63,7 +63,7 @@ async def start_command(message: types.Message):
     user_id = message.from_user.id
     data = await read_data(user_id)
     if 'items' not in data:
-        await write_data(user_id, {})  # Создаем пустой файл, если его нет
+        await write_data(user_id, {}) 
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(KeyboardButton("Мои ссылки"))
     await message.reply("Привет\nОтправь мне ссылку на товар на сайте Wildberries. \n"
@@ -73,7 +73,7 @@ async def start_command(message: types.Message):
 async def handle_link(message: types.Message):
     url = message.text
     user_id = message.from_user.id
-    logger.info(f"Новая ссылка от пользователя {user_id}: {url}")  # Записываем информацию о новой ссылке в лог
+    logger.info(f"Новая ссылка от пользователя {user_id}: {url}")
     await message.reply("Принял, обрабатываю... ")
     data = await read_data(user_id)
     title, price = await parse_link(url)
@@ -133,26 +133,26 @@ async def check_price_changes():
         for user_id_file in users:
             user_id = user_id_file.split('.')[0]
             data = await read_data(user_id)
-            if 'items' in data and data['items']:  # Проверяем, что список ссылок не пуст
+            if 'items' in data and data['items']:
                 for title, info in data['items'].items():
                     print('OK')
                     old_price = info[1]  # Сохраняем старую цену
-                    new_title, new_price = await parse_link(info[0])  # Получаем новую цену
+                    new_title, new_price = await parse_link(info[0])
                     if new_price != old_price:  # Сравниваем цены
                         if float(new_price) > float(old_price):
                             message = f"Цена товара '{title}' выросла!\nСтарая цена: {old_price}\nНовая цена: {new_price}"
                         else:
                             message = f"Цена товара '{title}' упала!\nСтарая цена: {old_price}\nНовая цена: {new_price}"
                         await bot.send_message(user_id, message)
-                    data['items'][title] = [info[0], new_price]  # Обновляем цену в данных
-                    await write_data(user_id, data)  # Записываем обновленные данные
-        await asyncio.sleep(12 * 60 * 60)  # Ждем 12 часов перед следующей проверкой
+                    data['items'][title] = [info[0], new_price]
+                    await write_data(user_id, data)
+        await asyncio.sleep(12 * 60 * 60)
         print('OK')
 
 if __name__ == '__main__':
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
-    loop = asyncio.get_event_loop()  # Получаем текущий цикл событий
-    loop.create_task(check_price_changes())  # Запускаем проверку цен как задачу в асинхронном цикле
+    loop = asyncio.get_event_loop()
+    loop.create_task(check_price_changes())
     asyncio.run(dp.start_polling())
 
